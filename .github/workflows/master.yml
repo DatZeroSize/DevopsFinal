@@ -1,8 +1,30 @@
 name: DevopsFinal Actions
-on: workflow_dispatch
+on: 
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
 jobs:
-  Testing:
+  test:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Testing workflow
-        run: echo "workflow work!"
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build solution
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Run tests
+        run: dotnet test --no-build --verbosity normal
