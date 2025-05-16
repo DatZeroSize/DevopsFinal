@@ -1,4 +1,5 @@
 name: DevopsFinal Actions
+
 on:
   push:
     branches:
@@ -7,23 +8,39 @@ on:
     branches:
       - master
   workflow_dispatch:
+
+env:
+  DOTNET_VERSION: 8.0.x
+  SONAR_HOST_URL: https://sonarcloud.io
+  SONAR_ORGANIZATION: DevopsFinal      # Thay bằng tên org SonarQube của bạn
+  SONAR_PROJECT_KEY: DevopsFinalKey    # Thay bằng khóa project SonarQube của bạn
+
 jobs:
-  test:
+  test-and-sonarqube:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v3
 
-      - name: Setup .NET 8
+      - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Restore dependencies
         run: dotnet restore
 
-      - name: Build project
-        run: dotnet build --no-restore --configuration Release
+      - name: Build test project
+        run: dotnet build DevopsFinal.Tests/DevopsFinal.Tests.csproj --no-restore --configuration Release
 
       - name: Run tests
-        run: dotnet test DevopsFinal.Tests/DevopsFinal.Tests.csproj --verbosity normal
+        run: dotnet test DevopsFinal.Tests/DevopsFinal.Tests.csproj --no-build --verbosity normal
 
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        with:
+          args: >
+            -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
+            -Dsonar.organization=${{ env.SONAR_ORGANIZATION }}
+            -Dsonar.host.url=${{ env.SONAR_HOST_URL }}
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
