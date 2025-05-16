@@ -9,12 +9,6 @@ on:
       - master
   workflow_dispatch:
 
-env:
-  DOTNET_VERSION: 8.0.x
-  SONAR_HOST_URL: https://sonarcloud.io
-  SONAR_ORGANIZATION: devopsfinal # Thay bằng tên org SonarQube của bạn
-  SONAR_PROJECT_KEY: DevopsFinalKey # Thay bằng khóa project SonarQube của bạn
-
 jobs:
   test-and-sonarqube:
     runs-on: ubuntu-latest
@@ -25,7 +19,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+          dotnet-version: ${{ secrets.DOTNET_VERSION }}
 
       - name: Restore dependencies
         run: dotnet restore
@@ -40,7 +34,7 @@ jobs:
         uses: SonarSource/sonarcloud-github-action@master
         with:
           args: >
-            -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
-            -Dsonar.organization=${{ env.SONAR_ORGANIZATION }}
-            -Dsonar.host.url=${{ env.SONAR_HOST_URL }}
+            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
+            -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
             -Dsonar.login=${{ secrets.SONAR_TOKEN }}
