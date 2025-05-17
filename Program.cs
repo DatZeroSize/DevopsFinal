@@ -9,6 +9,12 @@ builder.Services.AddDbContext<DevopsFinalContext>(options => options.UseSqlServe
 builder.WebHost.UseUrls("http://0.0.0.0:80");
 var app = builder.Build();
 
+// Tự động apply migration khi khởi động
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<DevopsFinalContext>();
+    dbContext.Database.Migrate();
+}
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
