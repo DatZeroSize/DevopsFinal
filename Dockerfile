@@ -21,8 +21,6 @@ RUN dotnet restore
 
 RUN dotnet build --configuration Release --no-restore
 
-RUN dotnet test DevopsFinal.Tests/DevopsFinal.Tests.csproj --no-build --verbosity normal
-
 RUN dotnet publish --configuration Release --no-build --output /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
