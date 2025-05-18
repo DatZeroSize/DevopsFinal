@@ -1,5 +1,3 @@
-ARG CONNECTION_STRING
-
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 
@@ -29,6 +27,6 @@ COPY --from=build /app/publish .
 
 
 ENV ASPNETCORE_ENVIRONMENT=Development
-ENV ConnectionStrings__DefaultConnectionString=$CONNECTION_STRING
+ENV ConnectionStrings__DefaultConnectionString="Server=devopsfinal-db.c9e60ogc853k.ap-southeast-2.rds.amazonaws.com,1433;Database=myapp_database;User Id=admin;Password=dat261303;TrustServerCertificate=True;MultipleActiveResultSets=true"
 
 ENTRYPOINT ["dotnet", "DevopsFinal.dll"]

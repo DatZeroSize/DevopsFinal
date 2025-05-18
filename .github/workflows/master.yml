@@ -66,9 +66,6 @@ jobs:
           tags: | 
             ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
             ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest
-          build-args: |
-            CONNECTION_STRING=${{ secrets.CONNECTION_STRING }}
-
 
   deploy:
     needs: build-and-push-docker
