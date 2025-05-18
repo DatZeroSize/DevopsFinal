@@ -1,7 +1,7 @@
+ARG CONNECTION_STRING
+
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
-
-ARG CONNECTION_STRING
 
 COPY DevopsFinal.sln ./
 COPY DevopsFinal.csproj ./ 
