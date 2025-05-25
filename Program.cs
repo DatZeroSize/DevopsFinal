@@ -27,9 +27,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.Sources.Clear();
 builder.Configuration.AddEnvironmentVariables();
 
+var connectionString = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<DevopsFinalContext>(options =>
-    options.UseSqlServer(builder.Configuration["ConnectionStrings:DefaultConnectionString"] ??
+    options.UseSqlServer(connectionString ??
         throw new InvalidOperationException("Connection string 'DefaultConnectionString' not found.")));
 
 // Explicitly load environment variables from .env file in development
