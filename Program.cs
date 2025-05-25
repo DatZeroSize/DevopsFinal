@@ -1,11 +1,11 @@
 using DevopsFinal.Data;
+using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
-
 var builder = WebApplication.CreateBuilder(args);
-
+Env.Load();
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-builder.Services.AddDbContext<DevopsFinalContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnectionString")));
+builder.Services.AddDbContext<DevopsFinalContext>(options => options.UseSqlServer(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ));
 builder.WebHost.UseUrls("http://0.0.0.0:80");
 var app = builder.Build();
 
@@ -16,6 +16,7 @@ using (var scope = app.Services.CreateScope())
     dbContext.Database.Migrate();
 }
 // Configure the HTTP request pipeline.
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
