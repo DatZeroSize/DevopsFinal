@@ -14,7 +14,7 @@ env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
   ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
   ECS_CLUSTER: devops-cluster
-  ECS_SERVICE: devopsfinal-service
+  ECS_SERVICE: devops-final-service
 
 jobs:
   test-and-sonarqube:
@@ -66,6 +66,7 @@ jobs:
         run: |
           echo "ASPNETCORE_ENVIRONMENT=${{ secrets.ASPNETCORE_ENVIRONMENT }}" > .env
           echo "ConnectionStrings__DefaultConnectionString=${{ secrets.CONNECTION_STRINGS_DEFAULT }}" >> .env
+          cat .env  # Log file content for debugging
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
@@ -75,8 +76,6 @@ jobs:
           tags: |
             ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
             ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest
-          build-args: |
-            ENV_FILE=.env
 
       - name: Remove .env file
         run: rm .env
@@ -95,8 +94,4 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Update ECS service
-        run: |
-          aws ecs update-service \
-            --cluster ${{ env.ECS_CLUSTER }} \
-            --service ${{ env.ECS_SERVICE }} \
-            --force-new-deployment
+        run: aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment
