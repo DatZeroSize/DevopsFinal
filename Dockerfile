@@ -24,5 +24,6 @@ RUN dotnet publish --configuration Release --no-build --output /app/publish
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 COPY --from=build /app/publish .
+COPY .env ./
 
 ENTRYPOINT ["dotnet", "DevopsFinal.dll"]

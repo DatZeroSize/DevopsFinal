@@ -1,17 +1,20 @@
 using DevopsFinal.Data;
 using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
-var builder = WebApplication.CreateBuilder(args);
-Env.Load();
-// Add services to the container.
-builder.Services.AddControllersWithViews();
 
-// Add services to the container.
+var builder = WebApplication.CreateBuilder(args);
+if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+{
+    Env.Load("/app/.env");
+}
+
+builder.Configuration.Sources.Clear();
+builder.Configuration.AddEnvironmentVariables();
+
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<DevopsFinalContext>(options =>
-    options.UseSqlServer(builder.Configuration["ConnectionStrings:DefaultConnectionString"]));
-
-//test
+    options.UseSqlServer(builder.Configuration["ConnectionStrings:DefaultConnectionString"] ??
+        throw new InvalidOperationException("Connection string 'DefaultConnectionString' not found.")));
 
 // Explicitly load environment variables from .env file in development
 if (builder.Environment.IsDevelopment())
