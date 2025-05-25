@@ -14,7 +14,7 @@ env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
   ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
   ECS_CLUSTER: devops-cluster
-  ECS_SERVICE: devopsfinal-service
+  ECS_SERVICE: devopsfinal-task-service-qswqd4rl
 
 jobs:
   test-and-sonarqube:
