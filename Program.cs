@@ -11,6 +11,8 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<DevopsFinalContext>(options =>
     options.UseSqlServer(builder.Configuration["ConnectionStrings:DefaultConnectionString"]));
 
+//test
+
 // Explicitly load environment variables from .env file in development
 if (builder.Environment.IsDevelopment())
 {
