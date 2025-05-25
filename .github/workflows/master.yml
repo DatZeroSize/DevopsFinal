@@ -64,6 +64,10 @@ jobs:
 
       - name: Create .env file for Docker build
         run: |
+          if [ -z "${{ secrets.ASPNETCORE_ENVIRONMENT }}" ] || [ -z "${{ secrets.CONNECTION_STRINGS_DEFAULT }}" ]; then
+            echo "Error: ASPNETCORE_ENVIRONMENT or CONNECTION_STRINGS_DEFAULT is not set in GitHub Secrets"
+            exit 1
+          fi
           echo "ASPNETCORE_ENVIRONMENT=${{ secrets.ASPNETCORE_ENVIRONMENT }}" > .env
           echo "ConnectionStrings__DefaultConnectionString=${{ secrets.CONNECTION_STRINGS_DEFAULT }}" >> .env
           cat .env  # Log file content for debugging
