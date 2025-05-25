@@ -25,5 +25,6 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 COPY --from=build /app/publish .
 COPY .env ./
+RUN chmod 644 .env  # Ensure the file is readable by the 'app' user
 
 ENTRYPOINT ["dotnet", "DevopsFinal.dll"]

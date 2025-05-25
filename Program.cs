@@ -8,6 +8,11 @@ if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development
     Env.Load("/app/.env");
 }
 
+// Log after loading .env
+Console.WriteLine("After loading .env:");
+Console.WriteLine("ASPNETCORE_ENVIRONMENT: " + Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"));
+Console.WriteLine("ConnectionStrings__DefaultConnectionString: " + Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnectionString"));
+
 builder.Configuration.Sources.Clear();
 builder.Configuration.AddEnvironmentVariables();
 
