@@ -5,7 +5,17 @@ var builder = WebApplication.CreateBuilder(args);
 Env.Load();
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-builder.Services.AddDbContext<DevopsFinalContext>(options => options.UseSqlServer(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ));
+
+// Add services to the container.
+builder.Services.AddControllersWithViews();
+builder.Services.AddDbContext<DevopsFinalContext>(options =>
+    options.UseSqlServer(builder.Configuration["ConnectionStrings:DefaultConnectionString"]));
+
+// Explicitly load environment variables from .env file in development
+if (builder.Environment.IsDevelopment())
+{
+    builder.Configuration.AddEnvironmentVariables();
+}
 builder.WebHost.UseUrls("http://0.0.0.0:80");
 var app = builder.Build();
 
