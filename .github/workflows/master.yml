@@ -11,6 +11,10 @@ on:
 
 env:
   IMAGE_TAG: ${{ github.sha }}
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+  ECS_CLUSTER: devops-cluster
+  ECS_SERVICE: devopsfinal-service
 
 jobs:
   test-and-sonarqube:
@@ -63,7 +67,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: | 
+          tags: |
             ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
             ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest
 
@@ -71,6 +75,8 @@ jobs:
     needs: build-and-push-docker
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -78,6 +84,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Deploy to ECS
+      - name: Update ECS service with new image and environment variables
         run: |
-          aws ecs update-service --cluster devops-cluster --service devopsfinal-service --force-new-deployment
+          aws ecs update-service \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --service ${{ env.ECS_SERVICE }} \
+            --force-new-deployment
+        env:
+          ASPNETCORE_ENVIRONMENT: ${{ secrets.ASPNETCORE_ENVIRONMENT }}
+          ConnectionStrings__DefaultConnectionString: ${{ secrets.CONNECTION_STRINGS_DEFAULT }}
