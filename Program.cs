@@ -2,25 +2,16 @@ using DevopsFinal.Data;
 using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
 
-Console.WriteLine("ASPNETCORE_ENVIRONMENT before loading .env: " + Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"));
-Console.WriteLine("ConnectionStrings__DefaultConnectionString before loading .env: " + Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnectionString"));
-
 // Check file permissions and content
-Console.WriteLine("Checking if /app/.env exists...");
 if (!File.Exists("/app/.env"))
 {
     throw new FileNotFoundException("The .env file was not found at /app/.env");
 }
-Console.WriteLine("File /app/.env exists. Content:");
-Console.WriteLine(File.ReadAllText("/app/.env"));
 
 // Load .env file
 Env.Load("/app/.env");
 
 // Log after loading .env
-Console.WriteLine("After loading .env:");
-Console.WriteLine("ASPNETCORE_ENVIRONMENT: " + Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"));
-Console.WriteLine("ConnectionStrings__DefaultConnectionString: " + Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnectionString"));
 
 var builder = WebApplication.CreateBuilder(args);
 
