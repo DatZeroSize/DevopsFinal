@@ -21,6 +21,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Cần thiết để SonarCloud phân tích lịch sử Git
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
@@ -33,8 +35,18 @@ jobs:
       - name: Build project
         run: dotnet build --no-restore --configuration Release
 
-      - name: Run tests
-        run: dotnet test DevopsFinal.Tests/DevopsFinal.Tests.csproj --verbosity normal
+      - name: Run tests with coverage
+        run: |
+          dotnet test DevopsFinal.Tests/DevopsFinal.Tests.csproj \
+            --configuration Release \
+            --settings coverlet.runsettings \
+            --verbosity normal
+
+      - name: Move coverage report
+        run: |
+          # Tìm file coverage.opencover.xml trong thư mục con và di chuyển về TestResults
+          find DevopsFinal.Tests/TestResults -type f -name "coverage.opencover.xml" -exec mv {} DevopsFinal.Tests/TestResults/coverage.opencover.xml \;
+          ls -la DevopsFinal.Tests/TestResults/
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
@@ -44,6 +56,7 @@ jobs:
             -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
             -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+            -Dsonar.cs.opencover.reportsPaths=DevopsFinal.Tests/TestResults/coverage.opencover.xml
 
   build-and-push-docker:
     needs: test-and-sonarqube
@@ -82,7 +95,8 @@ jobs:
             ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest
 
       - name: Remove .env file
-        run: rm .env
+        if: always()
+        run: rm -f .env
 
   deploy:
     needs: build-and-push-docker
