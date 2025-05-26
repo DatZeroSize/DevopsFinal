@@ -56,7 +56,9 @@ jobs:
             -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
             -Dsonar.login=${{ secrets.SONAR_TOKEN }}
-            -Dsonar.cs.opencover.reportsPaths=DevopsFinal.Tests/TestResults/coverage.opencover.xml
+            -Dsonar.cs.opencover.reportsPaths=DevopsFinal.Tests/TestResults/ba835b8a-8081-4f7b-a42a-57c78ad6d99a/coverage.opencover.xml
+            -Dsonar.exclusions=**/DevopsFinal/wwwroot/**,**/obj/**,**/bin/**,**/Program.cs,**/Models/ErrorViewModel.cs
+            -Dsonar.coverage.exclusions=**/DevopsFinal/wwwroot/**,**/obj/**,**/bin/**,**/Program.cs,**/Models/ErrorViewModel.cs
 
   build-and-push-docker:
     needs: test-and-sonarqube

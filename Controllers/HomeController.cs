@@ -6,9 +6,9 @@ namespace DevopsFinal.Controllers;
 
 public class HomeController : Controller
 {
-    private readonly ILogger<HomeController> _logger;
+    private readonly ILogger<HomeController>? _logger; // Cho phép null
 
-    public HomeController(ILogger<HomeController> logger)
+    public HomeController(ILogger<HomeController>? logger = null) // Thêm giá trị mặc định là null
     {
         _logger = logger;
     }

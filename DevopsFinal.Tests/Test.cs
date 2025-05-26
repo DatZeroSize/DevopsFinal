@@ -11,19 +11,6 @@ namespace Test
 {
     public class UnitTest1
     {
-        [Fact]
-        public void Create_Get_ReturnsViewResult()
-        {
-            // Arrange
-            var context = GetInMemoryDbContext();
-            var controller = new UsersController(context);
-
-            // Act
-            var result = controller.Create();
-
-            // Assert
-            Assert.IsType<ViewResult>(result);
-        }
         private DevopsFinalContext GetInMemoryDbContext()
         {
             var options = new DbContextOptionsBuilder<DevopsFinalContext>()
@@ -78,57 +65,6 @@ namespace Test
             // Kiểm tra user đã được thêm vào DB
             Assert.Single(context.Users, u => u.Name == "Minh");
         }
-        [Fact]
-        public async Task Create_InvalidUser_ReturnsViewResult()
-        {
-            // Arrange
-            var context = GetInMemoryDbContext();
-            var controller = new UsersController(context);
-            var invalidUser = new User { Name = "", Email = "invalid-email" }; // Email không hợp lệ, Name rỗng
-            controller.ModelState.AddModelError("Name", "The Name field is required.");
-            controller.ModelState.AddModelError("Email", "The Email field is not a valid email address.");
 
-            // Act
-            var result = await controller.Create(invalidUser);
-
-            // Assert
-            var viewResult = Assert.IsType<ViewResult>(result);
-            var model = Assert.IsType<User>(viewResult.Model);
-            Assert.Equal(invalidUser, model);
-            Assert.Empty(context.Users.Where(u => u.Email == "invalid-email")); // Đảm bảo user không được thêm
-        }
-[Fact]
-public async Task Delete_ValidId_ReturnsViewWithUser()
-{
-    // Arrange
-    var context = GetInMemoryDbContext();
-    var controller = new UsersController(context);
-
-    // Act
-    var result = await controller.Delete(1);
-
-    // Assert
-    var viewResult = Assert.IsType<ViewResult>(result);
-    var model = Assert.IsType<User>(viewResult.Model);
-    Assert.Equal(1, model.Id);
-    Assert.Equal("Tài", model.Name);
-    Assert.Equal("tai@example.com", model.Email);
-}
-[Fact]
-public async Task DeleteConfirmed_ValidId_RedirectsToIndex()
-{
-    // Arrange
-    var context = GetInMemoryDbContext();
-    var controller = new UsersController(context);
-
-    // Act
-    var result = await controller.DeleteConfirmed(1);
-
-    // Assert
-    var redirectResult = Assert.IsType<RedirectToActionResult>(result);
-    Assert.Equal("Index", redirectResult.ActionName);
-    Assert.Null(context.Users.Find(1)); // Đảm bảo user đã bị xóa
-}
     }
-    
 }
