@@ -1,8 +1,231 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Trang chủ";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container">
+    <!-- Hero Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="hero-section text-center py-5">
+                <div class="hero-icon mb-4">
+                    <i class="fas fa-graduation-cap fa-4x text-primary"></i>
+                </div>
+                <h1 class="display-4 fw-bold mb-3">Dự án cuối kỳ môn DevOps</h1>
+                <p class="lead text-muted mb-4">
+                    Hệ thống quản lý người dùng được xây dựng với ASP.NET Core MVC
+                </p>
+                <div class="hero-badges">
+                    <span class="badge bg-primary me-2 p-2">
+                        <i class="fas fa-code me-1"></i>ASP.NET Core
+                    </span>
+                    <span class="badge bg-success me-2 p-2">
+                        <i class="fas fa-database me-1"></i>Entity Framework
+                    </span>
+                    <span class="badge bg-info me-2 p-2">
+                        <i class="fas fa-paint-brush me-1"></i>Bootstrap 5
+                    </span>
+                    <span class="badge bg-warning text-dark p-2">
+                        <i class="fas fa-tools me-1"></i>DevOps
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Info Section -->
+    <div class="row mb-5">
+        <div class="col-md-6 mb-4">
+            <div class="card info-card h-100">
+                <div class="card-body text-center">
+                    <div class="info-icon mb-3">
+                        <i class="fas fa-bullseye fa-3x text-success"></i>
+                    </div>
+                    <h4 class="card-title">Mục tiêu dự án</h4>
+                    <p class="card-text">
+                        Xây dựng một hệ thống quản lý người dùng hoàn chỉnh với các chức năng CRUD, 
+                        áp dụng các nguyên tắc DevOps trong quá trình phát triển và triển khai.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card info-card h-100">
+                <div class="card-body text-center">
+                    <div class="info-icon mb-3">
+                        <i class="fas fa-rocket fa-3x text-primary"></i>
+                    </div>
+                    <h4 class="card-title">Công nghệ sử dụng</h4>
+                    <ul class="list-unstyled text-start">
+                        <li><i class="fas fa-check text-success me-2"></i>ASP.NET Core MVC</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Entity Framework Core</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Bootstrap 5 & Font Awesome</li>
+                        <li><i class="fas fa-check text-success me-2"></i>JavaScript ES6+</li>
+                        <li><i class="fas fa-check text-success me-2"></i>SQL Server</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Team Members Section -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card team-section">
+                <div class="card-header bg-gradient text-white text-center py-4">
+                    <h2 class="mb-0">
+                        <i class="fas fa-users me-3"></i>Danh sách thành viên nhóm
+                    </h2>
+                    <p class="mb-0 mt-2 opacity-75">5 thành viên tham gia dự án</p>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 team-table">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th scope="col" class="text-center" style="width: 15%;">
+                                        <i class="fas fa-hashtag me-2"></i>STT
+                                    </th>
+                                    <th scope="col" style="width: 50%;">
+                                        <i class="fas fa-user me-2"></i>Họ và tên
+                                    </th>
+                                    <th scope="col" style="width: 35%;">
+                                        <i class="fas fa-id-badge me-2"></i>Vai trò
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="team-member-row">
+                                    <td class="text-center">
+                                        <span class="member-number">1</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="member-avatar me-3">
+                                                Đ
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0 fw-bold">Đỗ Trần Tuấn Anh</h6>
+                                                <small class="text-muted">Developer</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-danger role-badge">
+                                            <i class="fas fa-crown me-1"></i>Devops
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr class="team-member-row">
+                                    <td class="text-center">
+                                        <span class="member-number">2</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="member-avatar me-3">
+                                                L
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0 fw-bold">Lê Tuấn Đạt</h6>
+                                                <small class="text-muted">Developer</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary role-badge">
+                                            <i class="fas fa-server me-1"></i>Devops
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr class="team-member-row">
+                                    <td class="text-center">
+                                        <span class="member-number">3</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="member-avatar me-3">
+                                                P
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0 fw-bold">Phạm Huỳnh Hiệp</h6>
+                                                <small class="text-muted">Viết báo cáo</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info role-badge">
+                                            <i class="fas fa-palette me-1"></i>Viết báo cáo
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr class="team-member-row">
+                                    <td class="text-center">
+                                        <span class="member-number">4</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="member-avatar me-3">
+                                                T
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0 fw-bold">Trần Quốc Long</h6>
+                                                <small class="text-muted">Viết báo cáo</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success role-badge">
+                                            <i class="fas fa-cogs me-1"></i>Viết báo cáo
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr class="team-member-row">
+                                    <td class="text-center">
+                                        <span class="member-number">5</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="member-avatar me-3">
+                                                N
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0 fw-bold">Nguyễn Thị Như Ý</h6>
+                                                <small class="text-muted">Viết báo cáo</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-warning text-dark role-badge">
+                                            <i class="fas fa-bug me-1"></i>Viết báo cáo
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions Section -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card quick-actions">
+                <div class="card-body text-center py-4">
+                    <h4 class="mb-4">
+                        <i class="fas fa-rocket me-2"></i>Khám phá dự án
+                    </h4>
+                    <div class="d-flex flex-wrap justify-content-center gap-3">
+                        <a href="/Users" class="btn btn-primary btn-lg">
+                            <i class="fas fa-users me-2"></i>Quản lý Users
+                        </a>
+
+                        <a href="https://github.com/TuananhDo0308/arccoffee" target="_blank" class="btn btn-outline-dark btn-lg">
+                            <i class="fab fa-github me-2"></i>Source Code
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
