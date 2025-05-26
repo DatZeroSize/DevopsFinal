@@ -448,19 +448,6 @@ function handleScroll() {
     });
 }
 
-// Utility function
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
 // Team member click effects
 function addTeamMemberClickEffect() {
     const teamRows = document.querySelectorAll('.team-member-row');
