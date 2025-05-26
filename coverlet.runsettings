@@ -6,8 +6,9 @@
         <Configuration>
           <Format>opencover</Format>
           <Output>./TestResults/coverage.opencover.xml</Output>
-          <Exclude>[*Test*]*</Exclude>
+          <Exclude>[*Test*]*,[*AspNetCoreGeneratedDocument*]*,[*Migrations*]*,**/wwwroot/**</Exclude>
           <Include>[DevopsFinal]*</Include>
+          <ExcludeByAttribute>Obsolete,GeneratedCodeAttribute,ExcludeFromCodeCoverage</ExcludeByAttribute>
         </Configuration>
       </DataCollector>
     </DataCollectors>
