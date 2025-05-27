@@ -122,37 +122,49 @@ jobs:
           DEPLOYMENT_ID=$(aws ecs describe-services --cluster $ECS_CLUSTER --services $ECS_SERVICE --query 'services[0].deployments[0].id' --output text)
           echo "DEPLOYMENT_ID=$DEPLOYMENT_ID" >> $GITHUB_ENV
 
-      - name: Wait for deployment to stabilize
+      - name: Wait for deployment and task to stabilize
+        timeout-minutes: 45  # Tăng thời gian tối đa lên 45 phút
         run: |
-          echo "Waiting for deployment to stabilize (timeout: 1200 seconds)..."
-          aws ecs wait services-stable --cluster $ECS_CLUSTER --services $ECS_SERVICE --wait-timeout 1200
-          SERVICE_STATUS=$(aws ecs describe-services --cluster $ECS_CLUSTER --services $ECS_SERVICE --query 'services[0].status' --output text)
-          if [ "$SERVICE_STATUS" != "ACTIVE" ]; then
-            echo "Service is not ACTIVE. Status: $SERVICE_STATUS"
+          MAX_ATTEMPTS=90  # 90 lần kiểm tra, mỗi lần cách nhau 30 giây = 45 phút
+          for ((i=1; i<=MAX_ATTEMPTS; i++)); do
+            echo "Attempt $i/$MAX_ATTEMPTS: Checking deployment and task status..."
+            # Lấy thông tin dịch vụ
+            SERVICE_STATUS=$(aws ecs describe-services --cluster $ECS_CLUSTER --services $ECS_SERVICE --query 'services[0].status' --output text)
+            DEPLOYMENT_STATE=$(aws ecs describe-services --cluster $ECS_CLUSTER --services $ECS_SERVICE --query 'services[0].deployments[0].status' --output text)
+            # Lấy task ARN của triển khai mới nhất
+            TASK_ARN=$(aws ecs list-tasks --cluster $ECS_CLUSTER --service-name $ECS_SERVICE --desired-status RUNNING --query 'taskArns[0]' --output text)
+            if [ -n "$TASK_ARN" ]; then
+              TASK_STATUS=$(aws ecs describe-tasks --cluster $ECS_CLUSTER --tasks $TASK_ARN --query 'tasks[0].lastStatus' --output text)
+            else
+              TASK_STATUS="PENDING"
+            fi
+            # Kiểm tra điều kiện thành công
+            if [ "$SERVICE_STATUS" == "ACTIVE" ] && [ "$DEPLOYMENT_STATE" == "PRIMARY" ] && [ "$TASK_STATUS" == "RUNNING" ]; then
+              echo "Deployment and task stabilized successfully!"
+              break
+            fi
+            echo "Current status - Service: $SERVICE_STATUS, Deployment: $DEPLOYMENT_STATE, Task: $TASK_STATUS"
             aws ecs describe-services --cluster $ECS_CLUSTER --services $ECS_SERVICE --query 'services[0].events[0:5]' --output text
-            exit 1
-          fi
-          DEPLOYMENT_STATE=$(aws ecs describe-services --cluster $ECS_CLUSTER --services $ECS_SERVICE --query 'services[0].deployments[0].status' --output text)
-          echo "Deployment state: $DEPLOYMENT_STATE"
-          if [ "$DEPLOYMENT_STATE" != "PRIMARY" ]; then
-            echo "Deployment failed or is not stable. Checking events..."
-            aws ecs describe-services --cluster $ECS_CLUSTER --services $ECS_SERVICE --query 'services[0].events[0:5]' --output text
-            exit 1
-          fi
+            if [ $i -eq $MAX_ATTEMPTS ]; then
+              echo "Deployment or task did not stabilize within $((MAX_ATTEMPTS * 30)) seconds. Failing..."
+              exit 1
+            fi
+            sleep 30
+          done
 
-      - name: Check task status
+      - name: Verify task details
         if: success()  # Chỉ chạy nếu bước trước thành công
         run: |
-          TASK_ARN=$(aws ecs list-tasks --cluster $ECS_CLUSTER --service-name $ECS_SERVICE --query 'taskArns[0]' --output text)
+          TASK_ARN=$(aws ecs list-tasks --cluster $ECS_CLUSTER --service-name $ECS_SERVICE --desired-status RUNNING --query 'taskArns[0]' --output text)
           if [ -z "$TASK_ARN" ]; then
-            echo "No tasks found for service $ECS_SERVICE"
+            echo "No running tasks found for service $ECS_SERVICE"
             aws ecs describe-services --cluster $ECS_CLUSTER --services $ECS_SERVICE --query 'services[0].events[0:5]' --output text
             exit 1
           fi
           TASK_STATUS=$(aws ecs describe-tasks --cluster $ECS_CLUSTER --tasks $TASK_ARN --query 'tasks[0].lastStatus' --output text)
-          echo "Task status: $TASK_STATUS"
+          echo "Final task status: $TASK_STATUS"
           if [ "$TASK_STATUS" != "RUNNING" ]; then
-            echo "Task failed to start. Checking logs and events..."
+            echo "Task failed to stabilize. Checking logs and events..."
             LOG_STREAM=$(aws logs describe-log-streams --log-group-name /ecs/$ECS_SERVICE --query 'logStreams[0].logStreamName' --output text --no-cli-pager)
             if [ -n "$LOG_STREAM" ]; then
               aws logs get-log-events --log-group-name /ecs/$ECS_SERVICE --log-stream-name $LOG_STREAM --output text --no-cli-pager
