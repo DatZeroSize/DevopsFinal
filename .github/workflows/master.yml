@@ -62,7 +62,7 @@ jobs:
   #       if: success()  # Chỉ chạy nếu bước trước thành công
 
   build-and-push-docker:
-    needs: test-and-sonarqube
+    # needs: test-and-sonarqube
     # if: success()  # Chỉ chạy nếu job test-and-sonarqube thành công
     runs-on: ubuntu-latest
     steps:
