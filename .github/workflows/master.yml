@@ -40,13 +40,19 @@ jobs:
           dotnet test DevopsFinal.Tests/DevopsFinal.Tests.csproj \
             --configuration Release \
             --settings coverlet.runsettings \
-            --verbosity normal
+            --verbosity normal \
+            --no-build
+          if [ $? -ne 0 ]; then
+            echo "Tests failed, exiting..."
+            exit 1
+          fi
 
       - name: Move coverage report
         run: |
           # Tìm file coverage.opencover.xml trong thư mục con và di chuyển về TestResults
           find DevopsFinal.Tests/TestResults -type f -name "coverage.opencover.xml" -exec mv {} DevopsFinal.Tests/TestResults/coverage.opencover.xml \;
           ls -la DevopsFinal.Tests/TestResults/
+        if: success()  # Chỉ chạy nếu bước trước thành công
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
@@ -56,9 +62,10 @@ jobs:
             -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
             -Dsonar.login=${{ secrets.SONAR_TOKEN }}
-            -Dsonar.cs.opencover.reportsPaths=DevopsFinal.Tests/TestResults/08a6de61-f5ab-48f6-9455-df84487e9a29/coverage.opencover.xml
+            -Dsonar.cs.opencover.reportsPaths=DevopsFinal.Tests/TestResults/coverage.opencover.xml
             -Dsonar.exclusions=**/wwwroot/**,**/obj/**,**/bin/**,**/Program.cs,**/Models/ErrorViewModel.cs
             -Dsonar.coverage.exclusions=**/wwwroot/**,**/obj/**,**/bin/**,**/Program.cs,**/Models/ErrorViewModel.cs
+        if: success()  # Chỉ chạy nếu bước trước thành công
 
   build-and-push-docker:
     needs: test-and-sonarqube
@@ -85,7 +92,7 @@ jobs:
           fi
           echo "ASPNETCORE_ENVIRONMENT=${{ secrets.ASPNETCORE_ENVIRONMENT }}" > .env
           echo "ConnectionStrings__DefaultConnectionString=${{ secrets.CONNECTION_STRINGS_DEFAULT }}" >> .env
-          cat .env  # Log file content for debugging
+          cat .env
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
