@@ -17,53 +17,53 @@ env:
   ECS_SERVICE: devopsfinal-task-service-qswqd4rl
 
 jobs:
-  # test-and-sonarqube:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #       with:
-  #         fetch-depth: 0  # Cần thiết để SonarCloud phân tích lịch sử Git
+  test-and-sonarqube:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Cần thiết để SonarCloud phân tích lịch sử Git
 
-  #     - name: Setup .NET
-  #       uses: actions/setup-dotnet@v3
-  #       with:
-  #         dotnet-version: ${{ secrets.DOTNET_VERSION }}
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ secrets.DOTNET_VERSION }}
 
-  #     - name: Restore dependencies
-  #       run: dotnet restore
+      - name: Restore dependencies
+        run: dotnet restore
 
-  #     - name: Build project
-  #       run: dotnet build --no-restore --configuration Release
+      - name: Build project
+        run: dotnet build --no-restore --configuration Release
 
-  #     - name: Run tests
-  #       run: |
-  #         dotnet test DevopsFinal.Tests/DevopsFinal.Tests.csproj \
-  #           --configuration Release \
-  #           --verbosity normal \
-  #           --no-build
-  #         if [ $? -ne 0 ]; then
-  #           echo "Tests failed, exiting..."
-  #           exit 1
-  #         fi
+      - name: Run tests
+        run: |
+          dotnet test DevopsFinal.Tests/DevopsFinal.Tests.csproj \
+            --configuration Release \
+            --verbosity normal \
+            --no-build
+          if [ $? -ne 0 ]; then
+            echo "Tests failed, exiting..."
+            exit 1
+          fi
 
-  #     - name: SonarCloud Scan
-  #       uses: SonarSource/sonarcloud-github-action@master
-  #       env:
-  #         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #       with:
-  #         args: >
-  #           -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
-  #           -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
-  #           -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
-  #           -Dsonar.exclusions=**/wwwroot/**,**/obj/**,**/bin/**,**/Program.cs,**/Models/ErrorViewModel.cs
-  #           -Dsonar.coverage.exclusions=**/wwwroot/**,**/obj/**,**/bin/**,**/Program.cs,**/Models/ErrorViewModel.cs
-  #           -Dsonar.qualitygate.wait=true  # Dừng nếu Quality Gate thất bại
-  #       if: success()  # Chỉ chạy nếu bước trước thành công
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
+            -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
+            -Dsonar.exclusions=**/wwwroot/**,**/obj/**,**/bin/**,**/Program.cs,**/Models/ErrorViewModel.cs
+            -Dsonar.coverage.exclusions=**/wwwroot/**,**/obj/**,**/bin/**,**/Program.cs,**/Models/ErrorViewModel.cs
+            -Dsonar.qualitygate.wait=true  # Dừng nếu Quality Gate thất bại
+        if: success()  
 
   build-and-push-docker:
-    # needs: test-and-sonarqube
-    # if: success()  # Chỉ chạy nếu job test-and-sonarqube thành công
+    needs: test-and-sonarqube
+    if: success()  
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -103,7 +103,7 @@ jobs:
         run: rm -f .env
   deploy:
     needs: build-and-push-docker
-    if: success()  # Chỉ chạy nếu job build-and-push-docker thành công
+    if: success()  
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -123,55 +123,9 @@ jobs:
           echo "DEPLOYMENT_ID=$DEPLOYMENT_ID" >> $GITHUB_ENV
           echo "Updated deployment ID: $DEPLOYMENT_ID"
 
-      - name: Wait for deployment and task to stabilize
-        timeout-minutes: 45  # Tăng thời gian tối đa lên 45 phút
-        run: |
-          MAX_ATTEMPTS=90  # 90 lần kiểm tra, mỗi lần cách nhau 30 giây = 45 phút
-          for ((i=1; i<=MAX_ATTEMPTS; i++)); do
-            echo "Attempt $i/$MAX_ATTEMPTS: Checking deployment and task status..."
-            # Lấy thông tin dịch vụ
-            SERVICE_STATUS=$(aws ecs describe-services --cluster $ECS_CLUSTER --services $ECS_SERVICE --query 'services[0].status' --output text)
-            DEPLOYMENT_STATE=$(aws ecs describe-services --cluster $ECS_CLUSTER --services $ECS_SERVICE --query 'services[0].deployments[0].status' --output text)
-            # Lấy task ARN của triển khai mới nhất
-            TASK_ARN=$(aws ecs list-tasks --cluster $ECS_CLUSTER --service-name $ECS_SERVICE --query 'taskArns[0]' --output text)
-            if [ -n "$TASK_ARN" ]; then
-              TASK_STATUS=$(aws ecs describe-tasks --cluster $ECS_CLUSTER --tasks $TASK_ARN --query 'tasks[0].lastStatus' --output text)
-              TASK_DETAILS=$(aws ecs describe-tasks --cluster $ECS_CLUSTER --tasks $TASK_ARN --query 'tasks[0].containers[0].healthStatus' --output text 2>/dev/null || echo "N/A")
-              # Kiểm tra trạng thái thất bại
-              if [ "$TASK_STATUS" == "FAILED" ] || [ "$TASK_STATUS" == "STOPPED" ]; then
-                echo "Task failed with status: $TASK_STATUS. Checking logs and events..."
-                LOG_STREAM=$(aws logs describe-log-streams --log-group-name /ecs/$ECS_SERVICE --query 'logStreams[0].logStreamName' --output text --no-cli-pager 2>/dev/null || echo "")
-                if [ -n "$LOG_STREAM" ]; then
-                  aws logs get-log-events --log-group-name /ecs/$ECS_SERVICE --log-stream-name $LOG_STREAM --output text --no-cli-pager
-                else
-                  echo "No log stream found. Check ECS task definition for logging configuration."
-                fi
-                aws ecs describe-tasks --cluster $ECS_CLUSTER --tasks $TASK_ARN --query 'tasks[0].containers[0].reason' --output text
-                aws ecs describe-services --cluster $ECS_CLUSTER --services $ECS_SERVICE --query 'services[0].events[0:5]' --output text
-                exit 1
-              fi
-            else
-              TASK_STATUS="PENDING"
-              TASK_DETAILS="N/A"
-            fi
-            # In trạng thái chi tiết
-            echo "Current Status - Service: $SERVICE_STATUS, Deployment: $DEPLOYMENT_STATE, Task: $TASK_STATUS, Health: $TASK_DETAILS"
-            # Kiểm tra điều kiện thành công
-            if [ "$SERVICE_STATUS" == "ACTIVE" ] && [ "$DEPLOYMENT_STATE" == "PRIMARY" ] && [ "$TASK_STATUS" == "RUNNING" ]; then
-              echo "Deployment and task stabilized successfully!"
-              break
-            fi
-            aws ecs describe-services --cluster $ECS_CLUSTER --services $ECS_SERVICE --query 'services[0].events[0:5]' --output text
-            if [ $i -eq $MAX_ATTEMPTS ]; then
-              echo "Deployment or task did not stabilize within $((MAX_ATTEMPTS * 30)) seconds. Failing..."
-              exit 1
-            fi
-            sleep 30
-          done
 
-      - name: Verify task details
-        if: success()  # Chỉ chạy nếu bước trước thành công
-        timeout-minutes: 15  # Thời gian tối đa chờ là 15 phút
+        if: success()  
+        timeout-minutes: 15  
         run: |
           MAX_ATTEMPTS=30  # 30 lần kiểm tra, mỗi lần cách nhau 30 giây = 15 phút
           for ((i=1; i<=MAX_ATTEMPTS; i++)); do
