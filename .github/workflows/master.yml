@@ -56,19 +56,33 @@ jobs:
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           args: >
             -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
             -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
             -Dsonar.cs.opencover.reportsPaths=DevopsFinal.Tests/TestResults/coverage.opencover.xml
             -Dsonar.exclusions=**/wwwroot/**,**/obj/**,**/bin/**,**/Program.cs,**/Models/ErrorViewModel.cs
             -Dsonar.coverage.exclusions=**/wwwroot/**,**/obj/**,**/bin/**,**/Program.cs,**/Models/ErrorViewModel.cs
+            -Dsonar.qualitygate.wait=true  # Dừng nếu Quality Gate thất bại
+        if: success()  # Chỉ chạy nếu bước trước thành công
+
+      - name: Verify SonarCloud Scan Result
+        run: |
+          # Kiểm tra xem file coverage có tồn tại không trước khi scan
+          if [ ! -f "DevopsFinal.Tests/TestResults/coverage.opencover.xml" ]; then
+            echo "Coverage file not found! SonarCloud scan likely failed."
+            exit 1
+          fi
+          # (Tùy chọn) Kiểm tra thêm nếu cần, ví dụ: gọi API SonarCloud để lấy trạng thái Quality Gate
         if: success()  # Chỉ chạy nếu bước trước thành công
 
   build-and-push-docker:
     needs: test-and-sonarqube
+    if: success()  # Chỉ chạy nếu job test-and-sonarqube thành công
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -109,6 +123,7 @@ jobs:
 
   deploy:
     needs: build-and-push-docker
+    if: success()  # Chỉ chạy nếu job build-and-push-docker thành công
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
