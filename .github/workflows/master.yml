@@ -61,46 +61,46 @@ jobs:
   #           -Dsonar.qualitygate.wait=true  # Dừng nếu Quality Gate thất bại
   #       if: success()  # Chỉ chạy nếu bước trước thành công
 
-  # build-and-push-docker:
-  #   needs: test-and-sonarqube
-  #   if: success()  # Chỉ chạy nếu job test-and-sonarqube thành công
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v3
+  build-and-push-docker:
+    needs: test-and-sonarqube
+    # if: success()  # Chỉ chạy nếu job test-and-sonarqube thành công
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
 
-  #     - name: Configure AWS credentials
-  #       uses: aws-actions/configure-aws-credentials@v2
-  #       with:
-  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #         aws-region: ${{ secrets.AWS_REGION }}
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-  #     - name: Login to Amazon ECR
-  #       id: login-ecr
-  #       uses: aws-actions/amazon-ecr-login@v1
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
 
-  #     - name: Create .env file for Docker build
-  #       run: |
-  #         if [ -z "${{ secrets.ASPNETCORE_ENVIRONMENT }}" ] || [ -z "${{ secrets.CONNECTION_STRINGS_DEFAULT }}" ]; then
-  #           echo "Error: ASPNETCORE_ENVIRONMENT or CONNECTION_STRINGS_DEFAULT is not set in GitHub Secrets"
-  #           exit 1
-  #         fi
-  #         echo "ASPNETCORE_ENVIRONMENT=${{ secrets.ASPNETCORE_ENVIRONMENT }}" > .env
-  #         echo "ConnectionStrings__DefaultConnectionString=${{ secrets.CONNECTION_STRINGS_DEFAULT }}" >> .env
-  #         cat .env
+      - name: Create .env file for Docker build
+        run: |
+          if [ -z "${{ secrets.ASPNETCORE_ENVIRONMENT }}" ] || [ -z "${{ secrets.CONNECTION_STRINGS_DEFAULT }}" ]; then
+            echo "Error: ASPNETCORE_ENVIRONMENT or CONNECTION_STRINGS_DEFAULT is not set in GitHub Secrets"
+            exit 1
+          fi
+          echo "ASPNETCORE_ENVIRONMENT=${{ secrets.ASPNETCORE_ENVIRONMENT }}" > .env
+          echo "ConnectionStrings__DefaultConnectionString=${{ secrets.CONNECTION_STRINGS_DEFAULT }}" >> .env
+          cat .env
 
-  #     - name: Build and push Docker image
-  #       uses: docker/build-push-action@v3
-  #       with:
-  #         context: .
-  #         push: true
-  #         tags: |
-  #           ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
-  #           ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+            ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest
 
-  #     - name: Remove .env file
-  #       if: always()
-  #       run: rm -f .env
+      - name: Remove .env file
+        if: always()
+        run: rm -f .env
 
   deploy:
     needs: build-and-push-docker
