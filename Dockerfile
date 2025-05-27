@@ -27,6 +27,5 @@ COPY --from=build /app/publish .
 COPY .env ./
 RUN chmod 644 .env  # Ensure the file is readable by the 'app' user
 
-ENV ConnectionStrings__DefaultConnectionString="Server=devopsfinal-db.c9e60ogc853k.ap-southeast-2.rds.amazonaws.com,1433;Database=myapp_database;User Id=admin;Password=dat261303;TrustServerCertificate=True;MultipleActiveResultSets=true"
 
 ENTRYPOINT ["dotnet", "DevopsFinal.dll"]
