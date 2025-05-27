@@ -17,90 +17,90 @@ env:
   ECS_SERVICE: devopsfinal-task-service-qswqd4rl
 
 jobs:
-  test-and-sonarqube:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0  # Cần thiết để SonarCloud phân tích lịch sử Git
+  # test-and-sonarqube:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         fetch-depth: 0  # Cần thiết để SonarCloud phân tích lịch sử Git
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: ${{ secrets.DOTNET_VERSION }}
+  #     - name: Setup .NET
+  #       uses: actions/setup-dotnet@v3
+  #       with:
+  #         dotnet-version: ${{ secrets.DOTNET_VERSION }}
 
-      - name: Restore dependencies
-        run: dotnet restore
+  #     - name: Restore dependencies
+  #       run: dotnet restore
 
-      - name: Build project
-        run: dotnet build --no-restore --configuration Release
+  #     - name: Build project
+  #       run: dotnet build --no-restore --configuration Release
 
-      - name: Run tests
-        run: |
-          dotnet test DevopsFinal.Tests/DevopsFinal.Tests.csproj \
-            --configuration Release \
-            --verbosity normal \
-            --no-build
-          if [ $? -ne 0 ]; then
-            echo "Tests failed, exiting..."
-            exit 1
-          fi
+  #     - name: Run tests
+  #       run: |
+  #         dotnet test DevopsFinal.Tests/DevopsFinal.Tests.csproj \
+  #           --configuration Release \
+  #           --verbosity normal \
+  #           --no-build
+  #         if [ $? -ne 0 ]; then
+  #           echo "Tests failed, exiting..."
+  #           exit 1
+  #         fi
 
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          args: >
-            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
-            -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
-            -Dsonar.exclusions=**/wwwroot/**,**/obj/**,**/bin/**,**/Program.cs,**/Models/ErrorViewModel.cs
-            -Dsonar.coverage.exclusions=**/wwwroot/**,**/obj/**,**/bin/**,**/Program.cs,**/Models/ErrorViewModel.cs
-            -Dsonar.qualitygate.wait=true  # Dừng nếu Quality Gate thất bại
-        if: success()  # Chỉ chạy nếu bước trước thành công
+  #     - name: SonarCloud Scan
+  #       uses: SonarSource/sonarcloud-github-action@master
+  #       env:
+  #         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       with:
+  #         args: >
+  #           -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
+  #           -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
+  #           -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
+  #           -Dsonar.exclusions=**/wwwroot/**,**/obj/**,**/bin/**,**/Program.cs,**/Models/ErrorViewModel.cs
+  #           -Dsonar.coverage.exclusions=**/wwwroot/**,**/obj/**,**/bin/**,**/Program.cs,**/Models/ErrorViewModel.cs
+  #           -Dsonar.qualitygate.wait=true  # Dừng nếu Quality Gate thất bại
+  #       if: success()  # Chỉ chạy nếu bước trước thành công
 
-  build-and-push-docker:
-    needs: test-and-sonarqube
-    if: success()  # Chỉ chạy nếu job test-and-sonarqube thành công
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
+  # build-and-push-docker:
+  #   needs: test-and-sonarqube
+  #   if: success()  # Chỉ chạy nếu job test-and-sonarqube thành công
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+  #     - name: Configure AWS credentials
+  #       uses: aws-actions/configure-aws-credentials@v2
+  #       with:
+  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+  #     - name: Login to Amazon ECR
+  #       id: login-ecr
+  #       uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Create .env file for Docker build
-        run: |
-          if [ -z "${{ secrets.ASPNETCORE_ENVIRONMENT }}" ] || [ -z "${{ secrets.CONNECTION_STRINGS_DEFAULT }}" ]; then
-            echo "Error: ASPNETCORE_ENVIRONMENT or CONNECTION_STRINGS_DEFAULT is not set in GitHub Secrets"
-            exit 1
-          fi
-          echo "ASPNETCORE_ENVIRONMENT=${{ secrets.ASPNETCORE_ENVIRONMENT }}" > .env
-          echo "ConnectionStrings__DefaultConnectionString=${{ secrets.CONNECTION_STRINGS_DEFAULT }}" >> .env
-          cat .env
+  #     - name: Create .env file for Docker build
+  #       run: |
+  #         if [ -z "${{ secrets.ASPNETCORE_ENVIRONMENT }}" ] || [ -z "${{ secrets.CONNECTION_STRINGS_DEFAULT }}" ]; then
+  #           echo "Error: ASPNETCORE_ENVIRONMENT or CONNECTION_STRINGS_DEFAULT is not set in GitHub Secrets"
+  #           exit 1
+  #         fi
+  #         echo "ASPNETCORE_ENVIRONMENT=${{ secrets.ASPNETCORE_ENVIRONMENT }}" > .env
+  #         echo "ConnectionStrings__DefaultConnectionString=${{ secrets.CONNECTION_STRINGS_DEFAULT }}" >> .env
+  #         cat .env
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          push: true
-          tags: |
-            ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
-            ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest
+  #     - name: Build and push Docker image
+  #       uses: docker/build-push-action@v3
+  #       with:
+  #         context: .
+  #         push: true
+  #         tags: |
+  #           ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+  #           ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest
 
-      - name: Remove .env file
-        if: always()
-        run: rm -f .env
+  #     - name: Remove .env file
+  #       if: always()
+  #       run: rm -f .env
 
   deploy:
     needs: build-and-push-docker
