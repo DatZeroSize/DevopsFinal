@@ -35,6 +35,17 @@ jobs:
       - name: Build project
         run: dotnet build --no-restore --configuration Release
 
+      - name: Publish build output
+        run: dotnet publish -c Release -o publish
+
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dotnet-publish
+          path: ./publish
+
+
       - name: Run tests
         run: |
           dotnet test DevopsFinal.Tests/DevopsFinal.Tests.csproj \
@@ -89,10 +100,16 @@ jobs:
           echo "ConnectionStrings__DefaultConnectionString=${{ secrets.CONNECTION_STRINGS_DEFAULT }}" >> .env
           cat .env
 
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dotnet-publish
+          path: ./publish
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
         with:
-          context: .
+          context: ./publish
           push: true
           tags: |
             ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
