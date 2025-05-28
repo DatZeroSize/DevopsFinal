@@ -56,9 +56,8 @@ jobs:
             -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
             -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
-            -Dsonar.exclusions=**/obj/**,**/bin/**,**/Program.cs,**/Models/ErrorViewModel.cs
-            -Dsonar.coverage.exclusions=**/obj/**,**/bin/**,**/Program.cs,**/Models/ErrorViewModel.cs
-            -Dsonar.cs.opencover.reportsPaths=DevopsFinal.Tests/TestResults/08a6de61-f5ab-48f6-9455-df84487e9a29/coverage.opencover.xml
+            -Dsonar.exclusions=**/wwwroot/**,**/obj/**,**/bin/**,**/Program.cs,**/Models/ErrorViewModel.cs
+            -Dsonar.coverage.exclusions=**/wwwroot/**,**/obj/**,**/bin/**,**/Program.cs,**/Models/ErrorViewModel.cs
             -Dsonar.qualitygate.wait=true  # Dừng nếu Quality Gate thất bại
         if: success()  
 
