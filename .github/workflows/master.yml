@@ -109,7 +109,10 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
         with:
-          context: ./publish
+          context: .
+          file: ./Dockerfile
+          build-contexts: |
+            publish=./publish
           push: true
           tags: |
             ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
